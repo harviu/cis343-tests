@@ -1,0 +1,12 @@
+{
+  "lab01_scanner": "scanner",
+  "lab02_ast": "ast_printer",
+  "lab03_parser": "parser",
+  "lab04_interpreter": "evaluater",
+  "lab05_variables": "statement",
+  "lab06_control_flow": "control_flow",
+  "lab07_functions": "function_no_closure",
+  "lab08_resolver": "resolver",
+  "lab09_classes": "class",
+  "lab10_inheritance": "inheritance"
+}

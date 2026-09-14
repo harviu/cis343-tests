@@ -1,0 +1,114 @@
+[
+  {
+    "name": "print_and_expression_statements",
+    "source": "1 + 2; print 4;",
+    "output": [
+      4
+    ],
+    "requirement": "Statements: expression results are discarded; print emits a value"
+  },
+  {
+    "name": "declaration_and_access",
+    "source": "var a = 7; print a;",
+    "output": [
+      7
+    ],
+    "requirement": "Variable declaration and lookup"
+  },
+  {
+    "name": "assignment",
+    "source": "var a = 1; a = 9; print a;",
+    "output": [
+      9
+    ],
+    "requirement": "Assignment updates a variable"
+  },
+  {
+    "name": "initializer_uses_existing_variable",
+    "source": "var a = 2; var b = a + 3; print b;",
+    "output": [
+      5
+    ],
+    "requirement": "Initializer evaluation"
+  },
+  {
+    "name": "block_shadowing",
+    "source": "var a = \"outer\"; { var a = \"inner\"; print a; } print a;",
+    "output": [
+      "inner",
+      "outer"
+    ],
+    "requirement": "Block scope and shadowing"
+  },
+  {
+    "name": "assign_enclosing_variable",
+    "source": "var a = 1; { a = 2; } print a;",
+    "output": [
+      2
+    ],
+    "requirement": "Environment assign follows enclosing scopes"
+  },
+  {
+    "name": "scope_restoration",
+    "source": "var a = \"global\"; { var b = \"block\"; } print a;",
+    "output": [
+      "global"
+    ],
+    "requirement": "Leaving a block restores the enclosing environment"
+  },
+  {
+    "name": "assignment_to_nearest_scope",
+    "source": "var a = 1; { var a = 2; { a = 3; } print a; } print a;",
+    "output": [
+      3,
+      1
+    ],
+    "requirement": "Assignment updates the closest declaration"
+  },
+  {
+    "name": "textbook_scope_example",
+    "source": "var a = \"global a\"; var b = \"global b\"; var c = \"global c\";\n{ var a = \"outer a\"; var b = \"outer b\";\n  { var a = \"inner a\"; print a; print b; print c; }\n  print a; print b; print c;\n} print a; print b; print c;",
+    "output": [
+      "inner a",
+      "outer b",
+      "global c",
+      "outer a",
+      "outer b",
+      "global c",
+      "global a",
+      "global b",
+      "global c"
+    ],
+    "requirement": "Exact nested-scope example from Lab 5"
+  },
+  {
+    "name": "missing_semicolon",
+    "source": "print 1",
+    "error": ";|semicolon",
+    "requirement": "Required syntax error: missing semicolon"
+  },
+  {
+    "name": "unmatched_block",
+    "source": "{ print 1;",
+    "error": "\\}|brace|block",
+    "requirement": "Required syntax error: unmatched brace"
+  },
+  {
+    "name": "invalid_assignment_target",
+    "source": "1 = 2;",
+    "error": "assignment|target|l.value",
+    "requirement": "Required syntax error: invalid l-value"
+  },
+  {
+    "name": "undefined_variable",
+    "source": "print missing;",
+    "error": "undefined|undeclared|not defined",
+    "requirement": "Reference environment lookup policy"
+  },
+  {
+    "name": "block_local_does_not_escape",
+    "source": "{ var a = 1; } print a;",
+    "error": "undefined|undeclared|not defined",
+    "requirement": "Block-local variable is inaccessible outside"
+  }
+]

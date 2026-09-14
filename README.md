@@ -1,74 +1,110 @@
-# CIS343 released practice tests
+# CIS343 cumulative lab tests
 
-Instructor-maintained tests and a reusable GitHub Actions workflow for the
-[student template](https://github.com/harviu/cis343-student-template).
-Only Lab 1 (22 scanner/token checks) is released initially. Python 3.12 and Git
-are sufficient; no third-party test framework is required.
+Practice tests for all ten Python Lox labs, based on `labs_instruction/lab1.md`
+through `lab10.md` and the corresponding local `mylox` branches. The 179 named
+checks cover both individual lab requirements and cumulative behavior.
+Python 3.12+ and Git are required; no third-party test framework is needed.
 
-This public repository contains practice tests, not instructor solutions or
-hidden final-grading tests. Only the instructor and TAs should have write access.
+**Only Lab 1 is currently released.** Labs 2–10 can be previewed locally with an
+explicit flag and do not join student Actions runs until added to the release
+list. Files pushed to this public repository are visible even when unreleased.
 
-## How updates reach students
+- [Coverage and manual-review requirements](COVERAGE.md)
+- [Python interfaces and baseline policies](CONTRACT.md)
+- [Reference branch validation and known failures](VALIDATION.md)
+- [Branch mapping](lab_branches.json)
 
-Student repositories call `.github/workflows/grade.yml@main`. Every fresh run
-fetches `main`, reads `released_labs.json`, and creates one job per released lab.
-All jobs in that run use the same recorded test commit. Updates to this workflow
-and test repository take effect on the next student push or manual workflow run.
-A test update alone does not trigger runs in all student repositories.
+## Run tests
 
-For local feedback, students run `python3 scripts/test.py` in their repository;
-it downloads the current tests into a temporary directory each time.
+From this `cis343-tests` directory:
 
-## Release a new lab
+```sh
+# Run currently released tests against a student checkout.
+python3 run_tests.py ../cis343-student-template
 
-1. Add a directory such as `lab02_ast/` with Python `unittest` files named
-   `test_*.py`. Import student modules using the interfaces in `CONTRACT.md`.
-2. Validate against a correct implementation and deliberately broken versions.
-3. Update `CONTRACT.md` to document the new public interface.
-4. Append the directory name to `released_labs.json`, keeping previous labs:
+# Preview a single unreleased lab against a checkout implementing that lab.
+python3 run_tests.py /path/to/student-checkout --lab lab02_ast --include-unreleased
+
+# Preview all cumulative checks through Lab 8.
+python3 run_tests.py /path/to/student-checkout --through lab08_resolver --include-unreleased
+
+# List current release or the complete instructor catalog.
+python3 run_tests.py --list
+python3 run_tests.py --list --include-unreleased
+```
+
+`--include-unreleased` is a local selection option, not a security mechanism.
+Do not put it in the shared student workflow. Keep released labs in course order.
+With the default workflow, the last released lab determines the current CLI
+stage. Explicit instructor previews use `--lab` or `--through` as that stage.
+Historical CLI output checks for Labs 1, 3, and 4 are skipped once superseded;
+all their API checks remain active. Every later program suite checks the real CLI.
+
+Each program has a five-second timeout. Each lab has a 120-second limit; the
+runner continues to subsequent labs after failure. GitHub limits each job to
+five minutes. Individual checks and diagnostics appear in the log.
+
+## Validate against your branches
+
+```sh
+# Each lab's own suite against its mapped reference branch.
+python3 tools/validate_branches.py ../mylox --output /tmp/cis343-matched.json
+
+# All previous suites as well, at every stage.
+python3 tools/validate_branches.py ../mylox --cumulative --output /tmp/cis343-cumulative.json
+```
+
+The validator archives committed local branch snapshots into temporary folders.
+It does not switch branches, edit solutions, use uncommitted changes, or fetch
+from GitHub. It records each commit and writes per-lab logs beside the output
+file. An exit code of 1 means at least one reference did not pass; known findings
+are documented in `VALIDATION.md`. No reference solutions are stored here.
+
+## Release a lab to students
+
+1. Review its cases and policies, validate against the intended reference, and
+   resolve or account for findings in `VALIDATION.md`.
+2. Append the suite to `released_labs.json`, preserving earlier suites, for example:
 
    ```json
    ["lab01_scanner", "lab02_ast"]
    ```
 
-5. Commit and push to `main`. Student repositories need no edits.
+3. Commit and push the test files and release list to `main`.
 
-Write unreleased tests privately if students should not see them. A branch in a
-public repository is still public. A directory is only executed after it appears
-in the release list. Invalid manifests, empty suites, failures, and timeouts
-return failure rather than a successful check.
+Student repositories use `harviu/cis343-tests/.github/workflows/grade.yml@main`.
+Every fresh push/manual run fetches the release list and starts a separate job
+for each lab, using one test commit for the whole run. Editing tests alone does
+not trigger every student's workflow. The student command `python3 scripts/test.py`
+also downloads current tests before running them.
 
-## Run manually
+The runner, shared support module, catalog, and suite files must be published
+together. For a future release that must stay hidden until its start date, keep
+the files locally or in a private instructor repository until then.
+
+## Add or change cases
+
+For Labs 5–10, edit the corresponding `cases.json`. Use a unique `name`, the Lox
+`source`, a `requirement` description, and either an `output` list or an `error`
+regular expression. Expected numbers and booleans are JSON values; strings are
+literal output lines. Every case becomes its own named unittest.
+
+API suites use Python `unittest` and the interfaces in `CONTRACT.md`.
+Run maintenance checks after editing:
 
 ```sh
-python3 run_tests.py /path/to/student-repository
-python3 run_tests.py /path/to/student-repository --lab lab01_scanner
-python3 run_tests.py --list
 python3 -m unittest discover -s harness_tests -v
 ```
 
-The runner allows 120 seconds per suite by default and continues to subsequent
-labs after a failure. GitHub adds a five-minute maximum to each lab job. Individual
-checks are visible in the logs. The current checks target the Python Lox reference
-interfaces; see [CONTRACT.md](CONTRACT.md) for exact behavior and coverage limits.
+The maintenance workflow checks syntax, catalog/case configuration, selection,
+and runner behavior. It does not certify reference solutions or replace
+validation of new test expectations against the lab instructions.
 
-## Reproducible final grading
+## Final grading
 
-For each submission, record the student commit and test commit. To reproduce a
-past result, check out those two commits and run `run_tests.py` directly instead
-of the student's command that fetches the latest release. Freeze the chosen test
-commit for a grading round so changing practice tests does not silently change
-past grades.
-
-Student repository checks are feedback, not tamper-proof grades: students can
-edit their caller workflow or code. Run final checks in an instructor-controlled,
-isolated process without exposing instructor credentials to student code. Keep
-hidden grading tests outside this public repository. Reports, design decisions,
-CLI behavior, and readability still require review against the course rubric.
-
-## Maintenance checks
-
-The repository's `Validate test harness` workflow checks release configuration,
-Python syntax, and runner behavior (passing/failing/empty suites and timeouts).
-It does not contain a reference solution or certify every released lab test.
-Before releasing new tests, also run them against your private reference solution.
+Record the student commit and test commit. Freeze a test version for each grading
+round, and check out those exact commits to reproduce results. Practice checks
+in student repositories are editable by students; final grading needs an
+instructor-controlled isolated process. Keep hidden tests and credentials away
+from student-controlled workflows. Review reports and the rest of the rubric
+separately. Passing the practice checks alone is not a complete grade.

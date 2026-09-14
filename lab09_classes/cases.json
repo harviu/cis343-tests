@@ -1,0 +1,98 @@
+[
+  {
+    "name": "declare_and_instantiate",
+    "source": "class Box {} var b=Box(); b.value=7; print b.value;",
+    "output": [
+      7
+    ],
+    "requirement": "Class declaration and instance construction"
+  },
+  {
+    "name": "field_update",
+    "source": "class Box {} var b=Box(); b.value=1; b.value=2; print b.value;",
+    "output": [
+      2
+    ],
+    "requirement": "Field creation, update, and access"
+  },
+  {
+    "name": "instances_have_separate_fields",
+    "source": "class Box {} var a=Box(); var b=Box(); a.x=1; b.x=2; print a.x; print b.x;",
+    "output": [
+      1,
+      2
+    ],
+    "requirement": "Independent instance state"
+  },
+  {
+    "name": "method_call",
+    "source": "class Greeter { greet() { return \"hello\"; } } print Greeter().greet();",
+    "output": [
+      "hello"
+    ],
+    "requirement": "Method definition, lookup, and invocation"
+  },
+  {
+    "name": "initializer_and_this",
+    "source": "class Box { init(value) { this.value=value; } get() { return this.value; } } print Box(7).get();",
+    "output": [
+      7
+    ],
+    "requirement": "Initializer parameters and this binding"
+  },
+  {
+    "name": "method_mutates_this",
+    "source": "class Counter { init() { this.n=0; } inc() { this.n=this.n+1; return this.n; } } var c=Counter(); print c.inc(); print c.inc();",
+    "output": [
+      1,
+      2
+    ],
+    "requirement": "Method updates receiver fields"
+  },
+  {
+    "name": "bound_method_retains_receiver",
+    "source": "class Box { init(x) { this.x=x; } get() { return this.x; } } var b=Box(9); var getter=b.get; print getter();",
+    "output": [
+      9
+    ],
+    "requirement": "Detached method stays bound to its receiver"
+  },
+  {
+    "name": "initializer_empty_return",
+    "source": "class Box { init() { this.x=3; return; } } print Box().x;",
+    "output": [
+      3
+    ],
+    "requirement": "Empty initializer return still constructs the instance"
+  },
+  {
+    "name": "get_on_non_instance",
+    "source": "var n=1; print n.x;",
+    "error": "instance|propert",
+    "requirement": "Required non-instance get error"
+  },
+  {
+    "name": "undefined_property",
+    "source": "class Box {} print Box().missing;",
+    "error": "undefined|propert",
+    "requirement": "Required undefined-property error"
+  },
+  {
+    "name": "set_on_non_instance",
+    "source": "var n=1; n.x=2;",
+    "error": "instance|field",
+    "requirement": "Required non-instance set error"
+  },
+  {
+    "name": "this_outside_class",
+    "source": "print this;",
+    "error": "this|class",
+    "requirement": "Required this-outside-class error"
+  },
+  {
+    "name": "initializer_wrong_arity",
+    "source": "class Box { init(x) { this.x=x; } } Box();",
+    "error": "argument|arity",
+    "requirement": "Initializer arity"
+  }
+]

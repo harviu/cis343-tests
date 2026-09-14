@@ -1,0 +1,108 @@
+[
+  {
+    "name": "function_with_parameters",
+    "source": "fun add(a, b) { return a + b; } print add(2, 3);",
+    "output": [
+      5
+    ],
+    "requirement": "Function declaration, argument binding, and returned value"
+  },
+  {
+    "name": "function_without_return",
+    "source": "fun greet() { print \"hello\"; } print greet();",
+    "output": [
+      "hello",
+      null
+    ],
+    "requirement": "Function with no return yields nil"
+  },
+  {
+    "name": "empty_return",
+    "source": "fun empty() { return; } print empty();",
+    "output": [
+      null
+    ],
+    "requirement": "Empty return yields nil"
+  },
+  {
+    "name": "early_return",
+    "source": "fun f() { return 7; print \"unreachable\"; } print f();",
+    "output": [
+      7
+    ],
+    "requirement": "Return exits the function"
+  },
+  {
+    "name": "return_from_nested_block",
+    "source": "fun f() { { return 8; } return 9; } print f();",
+    "output": [
+      8
+    ],
+    "requirement": "Return unwinds nested blocks"
+  },
+  {
+    "name": "parameter_scope",
+    "source": "var a = 10; fun f(a) { a = a + 1; return a; } print f(2); print a;",
+    "output": [
+      3,
+      10
+    ],
+    "requirement": "Parameters have local scope"
+  },
+  {
+    "name": "multiple_calls",
+    "source": "fun twice(a) { return a * 2; } print twice(3); print twice(4);",
+    "output": [
+      6,
+      8
+    ],
+    "requirement": "Calls receive separate local environments"
+  },
+  {
+    "name": "nested_calls",
+    "source": "fun add(a,b) { return a+b; } print add(add(1,2),3);",
+    "output": [
+      6
+    ],
+    "requirement": "Calls inside argument expressions"
+  },
+  {
+    "name": "argument_order",
+    "source": "var n = 0; fun next() { n = n + 1; return n; } fun pair(a,b) { print a; print b; } pair(next(),next());",
+    "output": [
+      1,
+      2
+    ],
+    "requirement": "Reference left-to-right argument evaluation"
+  },
+  {
+    "name": "native_clock",
+    "source": "print clock();",
+    "clock": true,
+    "requirement": "Native clock returns a finite nonnegative number"
+  },
+  {
+    "name": "call_non_function",
+    "source": "var n = 1; n();",
+    "error": "call|callable|function",
+    "requirement": "Required call type error"
+  },
+  {
+    "name": "too_few_arguments",
+    "source": "fun f(a) { return a; } f();",
+    "error": "argument|arity",
+    "requirement": "Required arity mismatch"
+  },
+  {
+    "name": "too_many_arguments",
+    "source": "fun f() { return; } f(1);",
+    "error": "argument|arity",
+    "requirement": "Required arity mismatch"
+  },
+  {
+    "name": "clock_arity",
+    "source": "clock(1);",
+    "error": "argument|arity",
+    "requirement": "Native function arity"
+  }
+]

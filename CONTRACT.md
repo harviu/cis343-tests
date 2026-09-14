@@ -25,15 +25,86 @@ The original assignment and instructor guidance determine the final grade.
   `ErrorHandler.had_error`. Messages include the line and either
   `Unexpected character` or `Unterminated string` (case insensitive).
 
-The tests call the scanner API rather than asserting the CLI's token output.
-That lets scanner checks keep running when later labs change the CLI to print
-ASTs or execute programs. File mode, interactive mode, report quality, grammar
-design, and extensions are reviewed separately; these 22 checks are practice
-coverage, not a complete automatic grade.
+Scanner API checks continue through every stage. File and interactive entry-point
+plumbing are checked with a mocked `Lox.run`; the real scanner CLI output is checked
+while Lab 1 is the current stage. Once a later lab changes CLI output, only that
+historical CLI check is skipped, not the scanner tests.
 
-## Later labs
+## Lab 2: AST generator and printer
 
-Lab 2 is AST generation/printing and Lab 3 is parsing in the current course
-instructions. No tests or interfaces for those labs are released yet. Define the
-interface in this document before adding each new suite. Keep earlier APIs
-compatible or deliberately update the tests to reflect approved changes.
+- `expr.Binary(left, operator, right)`, `Unary(operator, right)`,
+  `Grouping(expression)`, and `Literal(value)` preserve those fields.
+- `ast_printer.AstPrinter().print(expression)` returns the parenthesized string.
+- The assignment example must print `(* (- 123) (group 45.67))`.
+- `python tool/generate_ast.py OUTPUT_DIRECTORY` creates usable classes in
+  `OUTPUT_DIRECTORY/expr.py`. Generation happens in a temporary directory and
+  must not depend on writing over the student's source tree.
+
+## Lab 3: parser
+
+- `Parser(Scanner(source).scan_tokens()).expression()` returns an expression AST.
+  This interface remains available when `parse()` changes to parse statements.
+- Precedence, left associativity, grouping, all specified operators, and invalid
+  expressions are checked. Syntax errors set `ErrorHandler.had_error` and may
+  raise `ParseError` from this lower-level API.
+- AST printing follows the provided Python example, including `1.0` for scanned
+  numbers, `True`/`False` for Python boolean AST literals, and `nil` for None.
+- The CLI prints an AST while Lab 3 is the current stage. That historical CLI
+  assertion is skipped in later stages while the parser API suite keeps running.
+
+## Lab 4: expression evaluation
+
+- `Interpreter().evaluate(expression)` returns the expression value.
+- Invalid operands and division by zero raise `LoxRuntimeError`, rather than an
+  uncaught host-language exception. This is the baseline error-reporting policy;
+  an approved alternate division-by-zero value needs an adjusted test.
+- Baseline `+` accepts two numbers or two strings and rejects a mixed pair.
+- Tests check boolean/nil negation, not a specific truthiness policy for 0 or an
+  empty string; students must explain those design choices in their reports.
+- Calculator CLI output and handled type errors are checked at the Lab 4 stage.
+  In later stages the CLI requires statements and expression API tests continue.
+
+## Labs 5–10: complete programs
+
+`python src/lox.py SOURCE_FILE` executes a UTF-8 program. Normal execution exits
+with 0; language errors exit with a nonzero code, a relevant diagnostic, and no
+Python traceback. Diagnostics are matched by relevant words, not exact wording.
+Each program runs in a fresh subprocess with a five-second timeout.
+
+Numeric output accepts `3` or `3.0`; boolean output accepts `true` or `True`;
+None prints as `nil`. String lines match exactly. Extra output is a failure.
+
+Each suite's `cases.json` contains named input programs, expected output or error
+patterns, and the requirement being checked. A wrong syntax error cannot satisfy
+an unrelated runtime error test simply because both exit with a nonzero code.
+
+- **Lab 5:** `Environment(enclosing=None)`, `define(str, value)`, `get(Token)`,
+  and `assign(Token, value)` are directly tested. `Parser.parse()` returns a list
+  of statements; panic recovery must retain valid statements after malformed
+  declarations. AST nodes use `Print.expression` and `Literal.value`.
+- **Lab 6:** executable `if`, `while`, and `for`; `for` desugars into `While` and
+  block/expression nodes in `stmt`/`expr`. `for (;;)` has a true condition.
+- **Lab 7:** callability, arity, parameters, returns and native `clock()`.
+  Closures are not required until Lab 8. No wall-clock timestamp is hard-coded.
+- **Lab 8:** `Resolver(interpreter).resolve(statements)` records distances by
+  calling `interpreter.resolve(expression, depth)`. Closure and binding examples
+  from the assignment run through the actual CLI, including the resolver pass.
+- **Lab 9:** class construction, fields, methods, `this`, and `init`.
+- **Lab 10:** `class Child < Parent`, method inheritance/override, and `super`.
+
+## Design choices and manual grading
+
+These suites target the selected Python Lox reference track, not every permitted
+language design. Undefined-variable errors, global redeclaration, rejecting
+local redeclaration/self-initialization, nearest-if dangling-else binding, and
+rejecting a bare declaration as an if body follow the reference track. Approve
+and adapt tests for allowed alternatives before grading those students.
+
+Extra credit (mixed-type coercion, alternate division semantics, break, extra
+native functions, static methods, getters, and other approved extensions) is not
+required by these baseline tests. In particular, an approved extra-credit change
+may require replacing a baseline policy test rather than counting it as wrong.
+
+Reports, screenshots, grammar/semantic explanations, algorithm explanations,
+readability, attribution, and the course rubric require manual review. The
+checks are not points or a complete grade. See `COVERAGE.md` for the per-lab map.

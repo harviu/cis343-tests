@@ -1,0 +1,89 @@
+[
+  {
+    "name": "inherited_method",
+    "source": "class A { value() { return \"A\"; } } class B < A {} print B().value();",
+    "output": [
+      "A"
+    ],
+    "requirement": "Subclass inherits methods"
+  },
+  {
+    "name": "override_method",
+    "source": "class A { value() { return \"A\"; } } class B < A { value() { return \"B\"; } } print A().value(); print B().value();",
+    "output": [
+      "A",
+      "B"
+    ],
+    "requirement": "Overriding preserves superclass behavior"
+  },
+  {
+    "name": "super_method_call",
+    "source": "class A { value() { return \"A\"; } } class B < A { value() { return super.value()+\"B\"; } } print B().value();",
+    "output": [
+      "AB"
+    ],
+    "requirement": "Super invokes the superclass implementation"
+  },
+  {
+    "name": "super_retains_receiver",
+    "source": "class A { get() { return this.x; } } class B < A { init() { this.x=7; } get() { return super.get(); } } print B().get();",
+    "output": [
+      7
+    ],
+    "requirement": "Super method is bound to the current instance"
+  },
+  {
+    "name": "inherited_initializer",
+    "source": "class A { init(x) { this.x=x; } } class B < A {} print B(4).x;",
+    "output": [
+      4
+    ],
+    "requirement": "Subclass inherits initializer and arity"
+  },
+  {
+    "name": "multi_level_inheritance",
+    "source": "class A { value() { return \"A\"; } } class B < A {} class C < B {} print C().value();",
+    "output": [
+      "A"
+    ],
+    "requirement": "Method lookup traverses multiple superclasses"
+  },
+  {
+    "name": "super_uses_lexical_superclass",
+    "source": "class A { value() { return \"A\"; } } class B < A { value() { return \"B\"; } base() { return super.value(); } } class C < B {} print C().base();",
+    "output": [
+      "A"
+    ],
+    "requirement": "Inherited method retains its defining superclass binding"
+  },
+  {
+    "name": "super_outside_class",
+    "source": "super.value();",
+    "error": "super|class",
+    "requirement": "Required super-outside-class error"
+  },
+  {
+    "name": "super_without_superclass",
+    "source": "class A { value() { return super.value(); } }",
+    "error": "super|superclass",
+    "requirement": "Required super-in-nonderived-class error"
+  },
+  {
+    "name": "non_class_superclass",
+    "source": "var A=1; class B < A {}",
+    "error": "superclass|class",
+    "requirement": "Reference superclass type check"
+  },
+  {
+    "name": "self_inheritance",
+    "source": "class A < A {}",
+    "error": "itself|inherit",
+    "requirement": "Reference self-inheritance error"
+  },
+  {
+    "name": "missing_super_method",
+    "source": "class A {} class B < A { value() { return super.missing(); } } B().value();",
+    "error": "undefined|propert",
+    "requirement": "Undefined superclass method"
+  }
+]

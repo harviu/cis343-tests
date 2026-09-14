@@ -22,10 +22,13 @@ def released_labs(root=ROOT):
     return labs
 
 
-def run_lab(project, lab, timeout, root=ROOT):
+def run_lab(project, lab, timeout, root=ROOT, stage=None):
     env = os.environ.copy()
-    env["PYTHONPATH"] = str(project / "src")
+    env["PYTHONPATH"] = os.pathsep.join([str(root), str(project / "src")])
     env["CIS343_STUDENT_ROOT"] = str(project)
+    env.pop("CIS343_STAGE", None)
+    if stage is not None:
+        env["CIS343_STAGE"] = stage
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     # Discovery and execution are isolated in a child process. An empty suite
     # is an error, rather than unittest's default successful zero-test result.
@@ -50,12 +53,30 @@ sys.exit(0 if result.wasSuccessful() else 1)
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("project", nargs="?", type=Path)
-    parser.add_argument("--lab", help="Run one released lab")
+    parser.add_argument("--lab", help="Run one lab")
+    parser.add_argument("--through", help="Run cumulative labs up through this lab")
+    parser.add_argument("--include-unreleased", action="store_true",
+                        help="Instructor preview: allow suites outside the release list")
     parser.add_argument("--list", action="store_true", help="Print released labs as JSON")
     parser.add_argument("--timeout", type=float, default=120, help="Seconds allowed per lab")
     args = parser.parse_args()
     try:
         labs = released_labs()
+        if args.include_unreleased:
+            catalog = json.loads((ROOT / "lab_branches.json").read_text())
+            if not isinstance(catalog, dict) or not catalog:
+                raise ValueError("lab_branches.json must be a nonempty mapping")
+            labs = list(catalog)
+            for lab in labs:
+                if not re.fullmatch(r"lab[0-9]{2}_[a-z0-9_]+", lab) or not list((ROOT / lab).glob("test_*.py")):
+                    raise ValueError(f"Invalid or empty lab in catalog: {lab}")
+        stage = args.through or (args.lab if args.include_unreleased and args.lab else labs[-1])
+        if args.lab and args.through:
+            parser.error("Choose --lab or --through, not both")
+        if args.through:
+            if args.through not in labs:
+                parser.error(f"Lab is not available: {args.through}")
+            labs = labs[:labs.index(args.through) + 1]
         if args.list:
             print(json.dumps(labs))
             return 0
@@ -73,7 +94,7 @@ def main():
         failed = False
         for lab in labs:
             print(f"\n=== {lab} ===", flush=True)
-            status = run_lab(args.project.resolve(), lab, args.timeout)
+            status = run_lab(args.project.resolve(), lab, args.timeout, stage=stage)
             print(f"{lab}: {'PASS' if status == 0 else 'FAIL'}", flush=True)
             failed = failed or status != 0
         return 1 if failed else 0

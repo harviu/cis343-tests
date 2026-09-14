@@ -1,0 +1,97 @@
+[
+  {
+    "name": "closure_survives_return",
+    "source": "fun outer() { var value = \"captured\"; fun inner() { print value; } return inner; } var f = outer(); f();",
+    "output": [
+      "captured"
+    ],
+    "requirement": "Function closure retains its enclosing environment"
+  },
+  {
+    "name": "closure_mutates_captured_variable",
+    "source": "fun counter() { var n=0; fun inc() { n=n+1; return n; } return inc; } var c=counter(); print c(); print c();",
+    "output": [
+      1,
+      2
+    ],
+    "requirement": "Closure writes resolve to the captured binding"
+  },
+  {
+    "name": "independent_closures",
+    "source": "fun counter() { var n=0; fun inc() { n=n+1; return n; } return inc; } var a=counter(); var b=counter(); print a(); print a(); print b();",
+    "output": [
+      1,
+      2,
+      1
+    ],
+    "requirement": "Separate calls create independent captured state"
+  },
+  {
+    "name": "textbook_later_local_declaration",
+    "source": "var a=\"global\"; { fun showA() { print a; } showA(); var a=\"block\"; showA(); }",
+    "output": [
+      "global",
+      "global"
+    ],
+    "requirement": "Lab 8 example 1: lexical binding precedes later local declaration"
+  },
+  {
+    "name": "textbook_assignment_changes_binding",
+    "source": "var a=\"global\"; { fun showA() { print a; } showA(); a=\"block\"; showA(); }",
+    "output": [
+      "global",
+      "block"
+    ],
+    "requirement": "Lab 8 example 2: assignment changes the resolved global"
+  },
+  {
+    "name": "textbook_global_redeclaration",
+    "source": "var a=\"global\"; fun showA() { print a; } showA(); var a=\"change_block\"; showA();",
+    "output": [
+      "global",
+      "change_block"
+    ],
+    "requirement": "Lab 8 example 3: reference policy permits global redeclaration"
+  },
+  {
+    "name": "nested_environment_depth",
+    "source": "{ var a=1; { var b=2; { a=a+b; print a; } } print a; }",
+    "output": [
+      3,
+      3
+    ],
+    "requirement": "Resolver follows multiple environment links for reads and writes"
+  },
+  {
+    "name": "distinct_local_names_allowed",
+    "source": "{ var a=1; var b=2; print a+b; }",
+    "output": [
+      3
+    ],
+    "requirement": "Different locals are not redeclarations"
+  },
+  {
+    "name": "self_initialization",
+    "source": "var a=\"outer\"; { var a=a; }",
+    "error": "initializer|initializ|own",
+    "requirement": "Reference policy rejects local self-initialization"
+  },
+  {
+    "name": "local_redeclaration",
+    "source": "{ var a=1; var a=2; }",
+    "error": "already|redeclar|duplicate|same.*scope",
+    "requirement": "Reference policy rejects duplicate locals"
+  },
+  {
+    "name": "top_level_return",
+    "source": "return 1;",
+    "error": "return|top.level",
+    "requirement": "Required invalid return error"
+  },
+  {
+    "name": "return_in_top_level_block",
+    "source": "{ return; }",
+    "error": "return|top.level",
+    "requirement": "Block nesting does not make return valid"
+  }
+]

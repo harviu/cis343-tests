@@ -1,0 +1,136 @@
+[
+  {
+    "name": "if_true",
+    "source": "if (true) print 1;",
+    "output": [
+      1
+    ],
+    "requirement": "If executes then branch"
+  },
+  {
+    "name": "if_false_else",
+    "source": "if (false) print 1; else print 2;",
+    "output": [
+      2
+    ],
+    "requirement": "Else branch"
+  },
+  {
+    "name": "if_false_without_else",
+    "source": "if (false) print 1; print 2;",
+    "output": [
+      2
+    ],
+    "requirement": "False condition skips then branch"
+  },
+  {
+    "name": "dangling_else",
+    "source": "if (true) if (false) print \"bad\"; else print \"inner\";",
+    "output": [
+      "inner"
+    ],
+    "requirement": "Else binds to nearest unmatched if in reference grammar"
+  },
+  {
+    "name": "while_loop",
+    "source": "var i = 0; while (i < 3) { print i; i = i + 1; }",
+    "output": [
+      0,
+      1,
+      2
+    ],
+    "requirement": "While reevaluates condition and repeats body"
+  },
+  {
+    "name": "while_zero_iterations",
+    "source": "while (false) print \"bad\"; print \"done\";",
+    "output": [
+      "done"
+    ],
+    "requirement": "False while condition skips body"
+  },
+  {
+    "name": "for_loop",
+    "source": "for (var i = 0; i < 3; i = i + 1) print i;",
+    "output": [
+      0,
+      1,
+      2
+    ],
+    "requirement": "For initializer, condition, body, increment"
+  },
+  {
+    "name": "for_omitted_initializer",
+    "source": "var i = 0; for (; i < 2; i = i + 1) print i;",
+    "output": [
+      0,
+      1
+    ],
+    "requirement": "For with omitted initializer"
+  },
+  {
+    "name": "for_omitted_increment",
+    "source": "for (var i = 0; i < 2;) { print i; i = i + 1; }",
+    "output": [
+      0,
+      1
+    ],
+    "requirement": "For with omitted increment"
+  },
+  {
+    "name": "nested_loops",
+    "source": "for (var i = 0; i < 2; i = i + 1) { var j = 0; while (j < 2) { print i * 10 + j; j = j + 1; } }",
+    "output": [
+      0,
+      1,
+      10,
+      11
+    ],
+    "requirement": "Nested loops maintain independent state"
+  },
+  {
+    "name": "for_initializer_shadows_outer",
+    "source": "var i = 99; for (var i = 0; i < 1; i = i + 1) print i; print i;",
+    "output": [
+      0,
+      99
+    ],
+    "requirement": "For initializer block scope"
+  },
+  {
+    "name": "bare_declaration_in_if",
+    "source": "if (true) var a = 1;",
+    "error": "expression|statement|declaration",
+    "requirement": "Reference grammar rejects a bare declaration as an if body"
+  },
+  {
+    "name": "if_missing_open_parenthesis",
+    "source": "if true) print 1;",
+    "error": "\\(|parenthes",
+    "requirement": "Required if parenthesis error"
+  },
+  {
+    "name": "if_missing_close_parenthesis",
+    "source": "if (true print 1;",
+    "error": "\\)|parenthes",
+    "requirement": "Required if parenthesis error"
+  },
+  {
+    "name": "while_missing_parenthesis",
+    "source": "while true) print 1;",
+    "error": "\\(|parenthes",
+    "requirement": "Required while parenthesis error"
+  },
+  {
+    "name": "for_missing_parenthesis",
+    "source": "for var i = 0; i < 1; i = i + 1) print i;",
+    "error": "\\(|parenthes",
+    "requirement": "Required for parenthesis error"
+  },
+  {
+    "name": "for_missing_separator",
+    "source": "for (var i = 0 i < 1; i = i + 1) print i;",
+    "error": ";|semicolon",
+    "requirement": "For clause separator error"
+  }
+]

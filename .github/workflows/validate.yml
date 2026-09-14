@@ -14,5 +14,5 @@ jobs:
         with:
           python-version: '3.12'
       - run: python run_tests.py --list
-      - run: python -m compileall -q run_tests.py lab* harness_tests
+      - run: python -m compileall -q run_tests.py support.py lab* harness_tests tools
       - run: python -m unittest discover -s harness_tests -v
