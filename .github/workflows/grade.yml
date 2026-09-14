@@ -1,0 +1,60 @@
+name: Released cumulative labs
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  released:
+    name: Select released labs
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      labs: ${{ steps.release.outputs.labs }}
+      revision: ${{ steps.release.outputs.revision }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: harviu/cis343-tests
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Read release and record version
+        id: release
+        run: |
+          echo "labs=$(python run_tests.py --list)" >> "$GITHUB_OUTPUT"
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  test:
+    name: ${{ matrix.lab }}
+    needs: released
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: ${{ fromJSON(needs.released.outputs.labs) }}
+    steps:
+      - name: Checkout student submission
+        uses: actions/checkout@v6
+        with:
+          path: student
+          persist-credentials: false
+      - name: Checkout instructor tests
+        uses: actions/checkout@v6
+        with:
+          repository: harviu/cis343-tests
+          ref: ${{ needs.released.outputs.revision }}
+          path: instructor-tests
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Record submission and test commits
+        run: |
+          echo "Student commit: $(git -C student rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Test commit: $(git -C instructor-tests rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Run lab tests
+        env:
+          LAB: ${{ matrix.lab }}
+        run: python instructor-tests/run_tests.py student --lab "$LAB"
